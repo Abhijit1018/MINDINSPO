@@ -1,0 +1,29 @@
+# Python
+backend_venv/
+__pycache__/
+*.pyc
+*.pyo
+*.db
+backend/.env
+backend/instance/
+backend/static/uploads/
+
+# Node
+frontend/node_modules/
+frontend/dist/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# System
+.DS_Store
+Thumbs.db
+
+# Agent/Tool configs
+.agents/
+.agent/
+.continue/
+.kiro/
+.trae/
