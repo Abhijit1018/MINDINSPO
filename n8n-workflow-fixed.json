@@ -1,0 +1,682 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "dataType": "string",
+        "value1": "={{ $json.body.input_type }}",
+        "rules": {
+          "rules": [
+            {
+              "value2": "idea"
+            },
+            {
+              "value2": "tool",
+              "output": 1
+            }
+          ]
+        }
+      },
+      "id": "2dd54333-fa51-4f68-b157-b6abdbcbf394",
+      "name": "Switch Input Type",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [
+        1200,
+        1424
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an expert Solutions Architect and Product Strategist. Your task is to analyze raw ideas, tool names, or concepts provided by the user and transform them into a comprehensive, structured technical catalog.\n\nYou must output ONLY a raw, valid JSON object. Do not include any markdown formatting like ```json, conversational text, or explanations. \n\nThe JSON object must strictly follow this exact structure:\n\n{\n  \"_reasoning\": \"Use this field to quietly think step-by-step. Analyze the core mechanics of the idea, decide on the best modern technologies, and plan out the nodes for the Mermaid diagram BEFORE generating the rest of the fields.\",\n  \"summary\": \"A clear, professional, 3-4 sentence explanation of the idea or tool and its primary value proposition.\",\n  \"tech_stack\": [\"Array\", \"of\", \"4 to 6\", \"recommended\", \"highly relevant technologies\", \"or frameworks\"],\n  \"pros_cons\": {\n    \"pros\": [\"Array\", \"of\", \"3\", \"realistic advantages\"],\n    \"cons\": [\"Array\", \"of\", \"3\", \"realistic limitations or technical hurdles\"]\n  },\n  \"similar_tools\": [\"Array\", \"of\", \"top 3\", \"existing\", \"market\", \"alternatives\"],\n  \"mermaid_syntax\": \"graph TD\\\\n  A[User User] --> B(Frontend Action)\\\\n  B --> C{Backend Logic}\\\\n  C -->|Data| D[(Database)]\\\\n\\\\n(IMPORTANT: You must use \\\\\\\\n for line breaks so the JSON remains valid. Do not use unescaped double quotes anywhere inside this string. Keep node labels simple: avoid parentheses ( ) and special characters inside [] and {} node labels. Keep the diagram concise but accurate.)\",\n  \"image_prompt\": \"A highly detailed, cinematic prompt that an image generation AI can use to create a conceptual visualization or UI wireframe of this idea.\",\n  \"tags\": [\"Array\", \"of\", \"3 to 5\", \"high-level searchable\", \"categories\"]\n}\n\nTake a deep breath and thoroughly analyze the user's input before filling out the JSON. Ensure the JSON is flawlessly formatted and strictly valid.\n\nUSER INPUT TO ANALYZE:\n\"\"\"\n {{ $('Webhook').item.json.body.raw_input }}\n\"\"\"\n"
+      },
+      "id": "576f30ab-b073-41da-9d62-b53ee0e90d4e",
+      "name": "Generate Idea Data",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.4,
+      "position": [
+        1424,
+        1152
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an expert Technology Researcher. Your task is to analyze the tool name provided by the user and return a comprehensive technical profile of the tool.\n\nYou must output ONLY a raw, valid JSON object. Do not include any markdown formatting like ```json, conversational text, or explanations. \n\nThe JSON object must strictly follow this exact structure:\n\n{\n  \"_reasoning\": \"Use this field to quietly think about what the tool is, who made it, and what its core features are.\",\n  \"summary\": \"A clear, 3-4 sentence explanation of what the tool does and its main use cases.\",\n  \"creator\": \"The name of the company, organization, or person who created and maintains the tool.\",\n  \"link\": \"The official URL or primary repository link for the tool.\",\n  \"installation\": \"A brief 1-2 sentence explanation of how it is typically installed (e.g. npm install, docker pull, SaaS login).\",\n  \"unique_features\": [\"Array\", \"of\", \"4 to 5\", \"standout unique features\", \"that differentiate it\"],\n  \"market_trend\": \"A 1-2 sentence analysis of its current popularity or market trajectory.\",\n  \"similar_tools\": [\"Array\", \"of\", \"top 3\", \"competitors\", \"or alternatives\"],\n  \"mermaid_syntax\": \"graph TD\\\\n  A[Client] --> B(Tool API)\\\\n  B --> C{Processing}\\\\n\\\\n(IMPORTANT: Use \\\\\\\\n for line breaks. Keep node labels simple: avoid parentheses ( ) and special characters inside [] and {} node labels. Create a simple diagram showing how the tool fits into a workflow or its internal architecture.)\",\n  \"image_prompt\": \"A highly detailed cinematic prompt for an AI image generator to create a conceptual logo, dashboard, or abstract technical representation of this tool.\"\n}\n\nEnsure the JSON is flawlessly formatted and strictly valid.\n\nTOOL TO RESEARCH:\n\"\"\"\n {{ $('Webhook').item.json.body.raw_input }}\n\"\"\"\n"
+      },
+      "id": "8ce1da0c-d05a-4f42-aaab-1c2e6a9562b0",
+      "name": "Generate Tool Data",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.4,
+      "position": [
+        1424,
+        1664
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://idea-incubator-back.onrender.com/api/webhooks/n8n-callback",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "entry_id",
+              "value": "={{ $('Parse AI Output1').item.json.entry_id }}"
+            },
+            {
+              "name": "summary",
+              "value": "={{ $('Parse AI Output1').item.json.summary }}"
+            },
+            {
+              "name": "tech_stack",
+              "value": "={{ $('Parse AI Output1').item.json.tech_stack ? JSON.stringify($('Parse AI Output1').item.json.tech_stack) : '[]' }}"
+            },
+            {
+              "name": "pros_cons",
+              "value": "={{ $('Parse AI Output1').item.json.pros_cons ? JSON.stringify($('Parse AI Output1').item.json.pros_cons) : '{\"pros\":[],\"cons\":[]}' }}"
+            },
+            {
+              "name": "similar_tools",
+              "value": "={{ $('Parse AI Output1').item.json.similar_tools ? JSON.stringify($('Parse AI Output1').item.json.similar_tools) : '[]' }}"
+            },
+            {
+              "name": "mermaid_syntax",
+              "value": "={{ $('Parse AI Output1').item.json.mermaid_syntax }}"
+            },
+            {
+              "name": "tags",
+              "value": "={{ $('Parse AI Output1').item.json.tags ? JSON.stringify($('Parse AI Output1').item.json.tags) : '[]' }}"
+            },
+            {
+              "name": "creator",
+              "value": "={{ $('Parse AI Output1').item.json.creator || '' }}"
+            },
+            {
+              "name": "link",
+              "value": "={{ $('Parse AI Output1').item.json.link || '' }}"
+            },
+            {
+              "name": "installation",
+              "value": "={{ $('Parse AI Output1').item.json.installation || '' }}"
+            },
+            {
+              "name": "unique_features",
+              "value": "={{ $('Parse AI Output1').item.json.unique_features ? JSON.stringify($('Parse AI Output1').item.json.unique_features) : '[]' }}"
+            },
+            {
+              "name": "market_trend",
+              "value": "={{ $('Parse AI Output1').item.json.market_trend || '' }}"
+            },
+            {
+              "parameterType": "formBinaryData",
+              "name": "image_file",
+              "inputDataFieldName": "data1"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "898924ca-5e7b-41a3-98d3-f967346a7fb6",
+      "name": "Update Python Backend",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        2896,
+        1320
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://fal.run/fal-ai/flux/schnell",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Key REPLACE_WITH_ROTATED_FAL_KEY"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"prompt\": {{ JSON.stringify($('Parse AI Output1').item.json.image_prompt) }},\n  \"image_size\": \"square_hd\",\n  \"num_images\": 1\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2000,
+        1456
+      ],
+      "id": "1456ef1b-5e98-45e4-b113-6738e56c257a",
+      "name": "Generate Image",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $json.images[0].url }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "data1"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2224,
+        1456
+      ],
+      "id": "b2d1f0a4-7c3e-4f21-9a55-1c0de2f4a9b1",
+      "name": "Download Image",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Detect whether the image pipeline actually produced a binary file.\nconst item = $input.first();\nconst hasImage = !!(item.binary && item.binary.data1);\nreturn [{ json: { hasImage }, binary: item.binary }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2448,
+        1456
+      ],
+      "id": "d3f7a1c2-9b45-4e88-a1f2-6c0de2f4b7c2",
+      "name": "Flag Image"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "cond-has-image",
+              "leftValue": "={{ $json.hasImage }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2672,
+        1456
+      ],
+      "id": "e4a8b2d3-1c56-4f99-b2e3-7d1ef3a5c8d3",
+      "name": "Has Image?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://idea-incubator-back.onrender.com/api/webhooks/n8n-callback",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "entry_id",
+              "value": "={{ $('Parse AI Output1').item.json.entry_id }}"
+            },
+            {
+              "name": "summary",
+              "value": "={{ $('Parse AI Output1').item.json.summary }}"
+            },
+            {
+              "name": "tech_stack",
+              "value": "={{ $('Parse AI Output1').item.json.tech_stack ? JSON.stringify($('Parse AI Output1').item.json.tech_stack) : '[]' }}"
+            },
+            {
+              "name": "pros_cons",
+              "value": "={{ $('Parse AI Output1').item.json.pros_cons ? JSON.stringify($('Parse AI Output1').item.json.pros_cons) : '{\"pros\":[],\"cons\":[]}' }}"
+            },
+            {
+              "name": "similar_tools",
+              "value": "={{ $('Parse AI Output1').item.json.similar_tools ? JSON.stringify($('Parse AI Output1').item.json.similar_tools) : '[]' }}"
+            },
+            {
+              "name": "mermaid_syntax",
+              "value": "={{ $('Parse AI Output1').item.json.mermaid_syntax }}"
+            },
+            {
+              "name": "tags",
+              "value": "={{ $('Parse AI Output1').item.json.tags ? JSON.stringify($('Parse AI Output1').item.json.tags) : '[]' }}"
+            },
+            {
+              "name": "creator",
+              "value": "={{ $('Parse AI Output1').item.json.creator || '' }}"
+            },
+            {
+              "name": "link",
+              "value": "={{ $('Parse AI Output1').item.json.link || '' }}"
+            },
+            {
+              "name": "installation",
+              "value": "={{ $('Parse AI Output1').item.json.installation || '' }}"
+            },
+            {
+              "name": "unique_features",
+              "value": "={{ $('Parse AI Output1').item.json.unique_features ? JSON.stringify($('Parse AI Output1').item.json.unique_features) : '[]' }}"
+            },
+            {
+              "name": "market_trend",
+              "value": "={{ $('Parse AI Output1').item.json.market_trend || '' }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f5b9c3e4-2d67-4a11-c3f4-8e2ef4b6d9e4",
+      "name": "Update Backend (No Image)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        2896,
+        1600
+      ]
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-120b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        1504,
+        1376
+      ],
+      "id": "c25cada4-a664-41d6-a9c7-134e5762c60a",
+      "name": "Groq Chat Model Idea",
+      "credentials": {
+        "groqApi": {
+          "id": "ymmqRac2gpQjPaGY",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-120b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        1504,
+        1888
+      ],
+      "id": "53c5d280-b004-45d6-8ee2-f97b1004ab0d",
+      "name": "Groq Chat Model Tool",
+      "credentials": {
+        "groqApi": {
+          "id": "ymmqRac2gpQjPaGY",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "process-idea",
+        "options": {}
+      },
+      "id": "a5b3b8a7-add9-4810-8321-c03f6855f12d",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [
+        976,
+        1456
+      ],
+      "webhookId": "bb3a8961-dd99-49f2-9a28-b45ab171aa88"
+    },
+    {
+      "parameters": {
+        "jsCode": "let rawJsonString = $input.first().json.text;\nrawJsonString = rawJsonString.replace(/```json/gi, '').replace(/```/g, '').trim();\nconst parsedData = JSON.parse(rawJsonString);\nparsedData.entry_id = $('Webhook').item.json.body.entry_id;\nreturn [{ json: parsedData }];"
+      },
+      "id": "e494314f-9482-4289-9d72-18e376e1ec28",
+      "name": "Parse AI Output1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1776,
+        1456
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "chat-message",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "ee8d3ebb-b4a8-4e04-8b3a-5a1909fa825e",
+      "name": "Chat Webhook1",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [
+        992,
+        2384
+      ],
+      "webhookId": "chat-message-webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body;\n\nreturn [{\n  json: {\n    entry_id: body.entry_id,\n    message: body.message,\n    user_id: body.user_id,\n    summary: body.catalog_context?.summary || '',\n    tech_stack: JSON.stringify(body.catalog_context?.tech_stack || []),\n    pros_cons: JSON.stringify(body.catalog_context?.pros_cons || {}),\n    similar_tools: JSON.stringify(body.catalog_context?.similar_tools || []),\n    raw_input: body.catalog_context?.raw_input || ''\n  }\n}];"
+      },
+      "id": "90c52309-560f-4890-aa05-7bd952451010",
+      "name": "Chat Extract Fields1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1216,
+        2384
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"status\": \"processing\", \"entry_id\": \"{{ $('Chat Extract Fields1').item.json.entry_id }}\" }",
+        "options": {}
+      },
+      "id": "a63ecc45-5ac5-4f1f-b230-da4dc398e427",
+      "name": "Chat Respond ",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        1504,
+        2528
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a helpful AI assistant for the MindInspo idea incubator. You have TWO modes:\n\n**MODE 1 — NORMAL CHAT**: If the user is asking a question, seeking clarification, or just chatting about the catalog entry, respond with a plain helpful answer.\n\n**MODE 2 — CATALOG EDIT**: If the user is asking to CHANGE, UPDATE, MODIFY, IMPROVE, or REWRITE any part of the catalog (summary, tech stack, pros/cons, similar tools, creator, link, installation, unique features, market trend), you MUST respond with a JSON object.\n\nHere is the catalog entry context:\n\nCATALOG SUMMARY:\n{{ $json.summary }}\n\nTECH STACK:\n{{ $json.tech_stack }}\n\nPROS/CONS:\n{{ $json.pros_cons }}\n\nSIMILAR TOOLS:\n{{ $json.similar_tools }}\n\nORIGINAL IDEA:\n{{ $json.raw_input }}\n\nUSER MESSAGE:\n{{ $json.message }}\n\n---\n\nRESPONSE RULES:\n\n1. If the user is just chatting or asking questions → Reply with plain text. Be concise, insightful, and friendly. Keep responses under 200 words.\n\n2. If the user wants to MODIFY the catalog → You MUST reply with ONLY a valid JSON object in this exact format (no markdown, no code fences, just raw JSON):\n{\n  \"message\": \"A short explanation of the changes you are proposing.\",\n  \"proposed_changes\": {\n    \"field_name\": \"new_value\"\n  }\n}\n\nThe editable field names are: summary, tech_stack, pros_cons, similar_tools, creator, link, installation, unique_features, market_trend.\n\n- tech_stack, similar_tools, and unique_features should be JSON arrays of strings.\n- pros_cons should be an object like {\"pros\": [\"...\"], \"cons\": [\"...\"]}.\n- summary, creator, link, installation, market_trend should be plain strings.\n\nExamples of user messages that trigger MODE 2:\n- \"Update the summary to focus more on AI\"\n- \"Add Python to the tech stack\"\n- \"Change the market trend section\"\n- \"Remove Vue from similar tools and add Svelte\"\n- \"Make the pros list shorter\"\n\nNow respond to the user message above."
+      },
+      "id": "340e7ddd-8a4a-4565-acc5-86238cc00fe1",
+      "name": "Chat LLM1",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.4,
+      "position": [
+        1440,
+        2128
+      ]
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-120b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        1520,
+        2352
+      ],
+      "id": "4979e68f-ad28-42a6-8631-0db476731a52",
+      "name": "Groq Chat Model Chat1",
+      "credentials": {
+        "groqApi": {
+          "id": "ymmqRac2gpQjPaGY",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const llmText = ($input.first().json.text || 'Sorry, I could not generate a response.').trim();\nconst entryId = $('Chat Extract Fields1').item.json.entry_id;\n\n// Try to parse as JSON (MODE 2 — catalog edit)\nlet message = llmText;\nlet proposed_changes = null;\n\ntry {\n  // Strip markdown code fences if the LLM wrapped it\n  let cleanText = llmText;\n  if (cleanText.startsWith('```')) {\n    cleanText = cleanText.replace(/^```(?:json)?\\n?/, '').replace(/\\n?```$/, '').trim();\n  }\n  \n  const parsed = JSON.parse(cleanText);\n  \n  if (parsed.message && parsed.proposed_changes) {\n    message = parsed.message;\n    proposed_changes = parsed.proposed_changes;\n  }\n} catch (e) {\n  // Not JSON — it's a normal chat response (MODE 1)\n  // Keep message as-is\n}\n\nconst result = {\n  entry_id: entryId,\n  message: message\n};\n\nif (proposed_changes) {\n  result.proposed_changes = proposed_changes;\n}\n\nreturn [{ json: result }];"
+      },
+      "id": "98120f92-eae1-4314-a911-dbdeb3b7e94e",
+      "name": "Chat Prepare Payload1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1792,
+        2240
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://idea-incubator-back.onrender.com/api/webhooks/chat-response",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "id": "2c5d7c99-9dcf-427a-90e0-37c82fcd5f78",
+      "name": "Chat Callback Backend1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        2016,
+        2240
+      ]
+    }
+  ],
+  "connections": {
+    "Switch Input Type": {
+      "main": [
+        [
+          {
+            "node": "Generate Idea Data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Generate Tool Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Idea Data": {
+      "main": [
+        [
+          {
+            "node": "Parse AI Output1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Tool Data": {
+      "main": [
+        [
+          {
+            "node": "Parse AI Output1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Image": {
+      "main": [
+        [
+          {
+            "node": "Download Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Image": {
+      "main": [
+        [
+          {
+            "node": "Flag Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Flag Image": {
+      "main": [
+        [
+          {
+            "node": "Has Image?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Image?": {
+      "main": [
+        [
+          {
+            "node": "Update Python Backend",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update Backend (No Image)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model Idea": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Generate Idea Data",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model Tool": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Generate Tool Data",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Switch Input Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse AI Output1": {
+      "main": [
+        [
+          {
+            "node": "Generate Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chat Webhook1": {
+      "main": [
+        [
+          {
+            "node": "Chat Extract Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chat Extract Fields1": {
+      "main": [
+        [
+          {
+            "node": "Chat Respond ",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Chat LLM1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chat LLM1": {
+      "main": [
+        [
+          {
+            "node": "Chat Prepare Payload1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model Chat1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Chat LLM1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chat Prepare Payload1": {
+      "main": [
+        [
+          {
+            "node": "Chat Callback Backend1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0e9e56750b8457e068ab5412876235c5a0fe01ca352cd8fcb461c1186b167571"
+  }
+}
