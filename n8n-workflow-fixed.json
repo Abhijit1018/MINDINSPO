@@ -42,7 +42,7 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "=You are an expert Technology Researcher. Your task is to analyze the tool name provided by the user and return a comprehensive technical profile of the tool.\n\nYou must output ONLY a raw, valid JSON object. Do not include any markdown formatting like ```json, conversational text, or explanations. \n\nThe JSON object must strictly follow this exact structure:\n\n{\n  \"_reasoning\": \"Use this field to quietly think about what the tool is, who made it, and what its core features are.\",\n  \"summary\": \"A clear, 3-4 sentence explanation of what the tool does and its main use cases.\",\n  \"creator\": \"The name of the company, organization, or person who created and maintains the tool.\",\n  \"link\": \"The official URL or primary repository link for the tool.\",\n  \"installation\": \"A brief 1-2 sentence explanation of how it is typically installed (e.g. npm install, docker pull, SaaS login).\",\n  \"unique_features\": [\"Array\", \"of\", \"4 to 5\", \"standout unique features\", \"that differentiate it\"],\n  \"market_trend\": \"A 1-2 sentence analysis of its current popularity or market trajectory.\",\n  \"similar_tools\": [\"Array\", \"of\", \"top 3\", \"competitors\", \"or alternatives\"],\n  \"mermaid_syntax\": \"graph TD\\\\n  A[Client] --> B(Tool API)\\\\n  B --> C{Processing}\\\\n\\\\n(IMPORTANT: Use \\\\\\\\n for line breaks. Keep node labels simple: avoid parentheses ( ) and special characters inside [] and {} node labels. Create a simple diagram showing how the tool fits into a workflow or its internal architecture.)\",\n  \"image_prompt\": \"A highly detailed cinematic prompt for an AI image generator to create a conceptual logo, dashboard, or abstract technical representation of this tool.\"\n}\n\nEnsure the JSON is flawlessly formatted and strictly valid.\n\nTOOL TO RESEARCH:\n\"\"\"\n {{ $('Webhook').item.json.body.raw_input }}\n\"\"\"\n"
+        "text": "=You are an expert Technology Researcher. Your task is to analyze the tool name provided by the user and return a comprehensive technical profile of the tool.\n\nYou must output ONLY a raw, valid JSON object. Do not include any markdown formatting like ```json, conversational text, or explanations. \n\nThe JSON object must strictly follow this exact structure:\n\n{\n  \"_reasoning\": \"Use this field to quietly think about what the tool is, who made it, and what its core features are.\",\n  \"summary\": \"A clear, 3-4 sentence explanation of what the tool does and its main use cases.\",\n  \"creator\": \"The name of the company, organization, or person who created and maintains the tool.\",\n  \"link\": \"The official URL or primary repository link for the tool.\",\n  \"installation\": \"A brief 1-2 sentence explanation of how it is typically installed (e.g. npm install, docker pull, SaaS login).\",\n  \"unique_features\": [\"Array\", \"of\", \"4 to 5\", \"standout unique features\", \"that differentiate it\"],\n  \"market_trend\": \"A 1-2 sentence analysis of its current popularity or market trajectory.\",\n  \"similar_tools\": [\"Array\", \"of\", \"top 3\", \"competitors\", \"or alternatives\"],\n  \"mermaid_syntax\": \"graph TD\\\\n  A[Client] --> B(Tool API)\\\\n  B --> C{Processing}\\\\n\\\\n(IMPORTANT: Use \\\\\\\\n for line breaks. Keep node labels simple: avoid parentheses ( ) and special characters inside [] and {} node labels. Create a simple diagram showing how the tool fits into a workflow or its internal architecture.)\",\n  \"tags\": [\"Array\", \"of\", \"3 to 5\", \"high-level searchable\", \"categories\"],\n  \"image_prompt\": \"A highly detailed cinematic prompt for an AI image generator to create a conceptual logo, dashboard, or abstract technical representation of this tool.\"\n}\n\nEnsure the JSON is flawlessly formatted and strictly valid.\n\nTOOL TO RESEARCH:\n\"\"\"\n {{ $('Webhook').item.json.body.raw_input }}\n\"\"\"\n"
       },
       "id": "8ce1da0c-d05a-4f42-aaab-1c2e6a9562b0",
       "name": "Generate Tool Data",
@@ -359,7 +359,8 @@
       "parameters": {
         "httpMethod": "POST",
         "path": "process-idea",
-        "options": {}
+        "options": {},
+        "authentication": "headerAuth"
       },
       "id": "a5b3b8a7-add9-4810-8321-c03f6855f12d",
       "name": "Webhook",
@@ -369,7 +370,13 @@
         976,
         1456
       ],
-      "webhookId": "bb3a8961-dd99-49f2-9a28-b45ab171aa88"
+      "webhookId": "bb3a8961-dd99-49f2-9a28-b45ab171aa88",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "",
+          "name": "MindInspo webhook secret"
+        }
+      }
     },
     {
       "parameters": {
@@ -389,7 +396,8 @@
         "httpMethod": "POST",
         "path": "chat-message",
         "responseMode": "responseNode",
-        "options": {}
+        "options": {},
+        "authentication": "headerAuth"
       },
       "id": "ee8d3ebb-b4a8-4e04-8b3a-5a1909fa825e",
       "name": "Chat Webhook1",
@@ -399,7 +407,13 @@
         992,
         2384
       ],
-      "webhookId": "chat-message-webhook"
+      "webhookId": "chat-message-webhook",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "",
+          "name": "MindInspo webhook secret"
+        }
+      }
     },
     {
       "parameters": {
