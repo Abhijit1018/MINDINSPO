@@ -56,7 +56,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://idea-incubator-back.onrender.com/api/webhooks/n8n-callback",
+        "url": "={{ ($('Webhook').first().json.body.callback_base || 'https://idea-incubator-back.onrender.com') + '/api/webhooks/n8n-callback' }}",
         "sendBody": true,
         "contentType": "multipart-form-data",
         "bodyParameters": {
@@ -240,7 +240,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://idea-incubator-back.onrender.com/api/webhooks/n8n-callback",
+        "url": "={{ ($('Webhook').first().json.body.callback_base || 'https://idea-incubator-back.onrender.com') + '/api/webhooks/n8n-callback' }}",
         "sendBody": true,
         "contentType": "multipart-form-data",
         "bodyParameters": {
@@ -493,7 +493,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://idea-incubator-back.onrender.com/api/webhooks/chat-response",
+        "url": "={{ ($('Chat Webhook1').first().json.body.callback_base || 'https://idea-incubator-back.onrender.com') + '/api/webhooks/chat-response' }}",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{ JSON.stringify($json) }}",
