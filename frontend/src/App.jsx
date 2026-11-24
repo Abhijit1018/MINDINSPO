@@ -5,6 +5,7 @@ import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import ScrollToTop from './components/ScrollToTop';
 import WarmingBanner from './components/WarmingBanner';
+import ErrorBoundary from './components/ErrorBoundary';
 import { Toaster } from 'react-hot-toast';
 
 // Lazy-load pages so the initial load (landing/login) doesn't pull in heavy
@@ -21,6 +22,9 @@ const NetworkPage = lazy(() => import('./pages/NetworkPage'));
 const SettingsPage = lazy(() => import('./pages/SettingsPage'));
 const AdminPage = lazy(() => import('./pages/AdminPage'));
 const CollabWorkspacePage = lazy(() => import('./pages/CollabWorkspacePage'));
+const PrivacyPage = lazy(() => import('./pages/LegalPage').then(m => ({ default: m.PrivacyPage })));
+const TermsPage = lazy(() => import('./pages/LegalPage').then(m => ({ default: m.TermsPage })));
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 
 function PageFallback() {
   return (
@@ -65,6 +69,7 @@ function App() {
       />
       <BrowserRouter>
         <ScrollToTop />
+        <ErrorBoundary>
         <Suspense fallback={<PageFallback />}>
         <Routes>
           {/* Login page — standalone layout (no navbar/footer) */}
@@ -135,9 +140,14 @@ function App() {
                 </ProtectedRoute>
               }
             />
+
+            <Route path="/privacy" element={<PrivacyPage />} />
+            <Route path="/terms" element={<TermsPage />} />
+            <Route path="*" element={<NotFoundPage />} />
           </Route>
         </Routes>
         </Suspense>
+        </ErrorBoundary>
       </BrowserRouter>
     </AuthProvider>
   );

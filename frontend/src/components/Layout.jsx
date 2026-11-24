@@ -247,6 +247,8 @@ function Footer() {
             <Link to="/" className="hover:text-white transition-colors">Home</Link>
             <Link to="/community" className="hover:text-white transition-colors">Community</Link>
             <Link to="/dashboard" className="hover:text-white transition-colors">Dashboard</Link>
+            <Link to="/privacy" className="hover:text-white transition-colors">Privacy</Link>
+            <Link to="/terms" className="hover:text-white transition-colors">Terms</Link>
           </div>
           <p className="text-xs text-mi-text-muted font-body">
             © {new Date().getFullYear()} MindInspo. AI-Powered Idea Incubation.

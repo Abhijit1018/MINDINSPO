@@ -116,7 +116,16 @@
             }
           ]
         },
-        "options": {}
+        "options": {},
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Webhook-Secret",
+              "value": "REPLACE_WITH_N8N_WEBHOOK_SECRET"
+            }
+          ]
+        }
       },
       "id": "898924ca-5e7b-41a3-98d3-f967346a7fb6",
       "name": "Update Python Backend",
@@ -286,7 +295,16 @@
             }
           ]
         },
-        "options": {}
+        "options": {},
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Webhook-Secret",
+              "value": "REPLACE_WITH_N8N_WEBHOOK_SECRET"
+            }
+          ]
+        }
       },
       "id": "f5b9c3e4-2d67-4a11-c3f4-8e2ef4b6d9e4",
       "name": "Update Backend (No Image)",
@@ -465,7 +483,16 @@
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{ JSON.stringify($json) }}",
-        "options": {}
+        "options": {},
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Webhook-Secret",
+              "value": "REPLACE_WITH_N8N_WEBHOOK_SECRET"
+            }
+          ]
+        }
       },
       "id": "2c5d7c99-9dcf-427a-90e0-37c82fcd5f78",
       "name": "Chat Callback Backend1",

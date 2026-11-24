@@ -192,6 +192,12 @@ export default function LoginPage() {
             </button>
           </div>
 
+          <p className="text-xs text-mi-text-secondary font-body text-center -mt-2 mb-6">
+            By continuing you agree to our{' '}
+            <Link to="/terms" className="text-mi-accent hover:underline">Terms</Link> and{' '}
+            <Link to="/privacy" className="text-mi-accent hover:underline">Privacy Policy</Link>.
+          </p>
+
           {/* Divider */}
           <div className="flex items-center gap-4 mb-6">
             <div className="flex-1 h-px bg-mi-border" />
