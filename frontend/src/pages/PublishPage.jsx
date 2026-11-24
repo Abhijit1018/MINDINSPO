@@ -8,6 +8,7 @@ import {
 import { useAuth } from '../lib/AuthContext';
 import { authFetch } from '../lib/api';
 import { PublishCardSkeleton } from '../components/SkeletonLoaders';
+import { displayTitle } from '../lib/ideaDisplay';
 
 /* ─── Tag Input ─── */
 function TagInput({ tags, setTags }) {
@@ -160,7 +161,7 @@ function PublishCard({ entry, onPublish, onUnpublish, publishing, visibleFields,
               </span>
             )}
           </div>
-          <h3 className="font-heading text-lg tracking-wide text-white truncate">{entry.raw_input}</h3>
+          <h3 className="font-heading text-lg tracking-wide text-white truncate">{displayTitle(entry)}</h3>
           {entry.summary && (
             <p className="font-body text-xs text-mi-text-muted mt-1 line-clamp-2">{entry.summary}</p>
           )}

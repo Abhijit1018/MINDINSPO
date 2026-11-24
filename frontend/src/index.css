@@ -131,6 +131,9 @@
    Utility Classes
    ============================================ */
 @layer utilities {
+  .no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+
   /* Gradient text */
   .text-gradient-accent {
     background: linear-gradient(135deg, #ff4d00, #ff8040);

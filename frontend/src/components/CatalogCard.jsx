@@ -2,11 +2,12 @@ import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import mermaid from 'mermaid';
 import { Layers, Zap, AlertTriangle, GitBranch, ArrowRight, CheckCircle2, ChevronDown, ChevronUp } from 'lucide-react';
+import { displayTitle, parseApiDate } from '../lib/ideaDisplay';
 
 mermaid.initialize({
     startOnLoad: true,
     theme: 'dark',
-    securityLevel: 'loose',
+    securityLevel: 'strict', // user-editable diagram text: no HTML labels or click handlers
     fontFamily: '"Space Grotesk", sans-serif',
 });
 
@@ -55,10 +56,10 @@ export default function CatalogCard({ entry, index, onSelect }) {
                     </span>
                 </div>
                 <h2 className="text-2xl font-display font-bold uppercase tracking-tight text-white mb-1 break-words">
-                    {raw_input.length > 50 ? raw_input.substring(0, 50) + '...' : raw_input}
+                    {displayTitle(entry)}
                 </h2>
                 <span className="text-sm font-sans text-neo-muted">
-                    {new Date(created_at).toLocaleString()}
+                    {parseApiDate(created_at).toLocaleString()}
                 </span>
             </div>
 

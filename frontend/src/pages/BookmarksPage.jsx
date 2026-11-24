@@ -5,6 +5,7 @@ import { Bookmark, ArrowUpRight } from 'lucide-react';
 import { authFetch } from '../lib/api';
 import { REACTION_CONFIG } from '../components/Reactions';
 import EmptyState from '../components/EmptyState';
+import { displayTitle } from '../lib/ideaDisplay';
 
 function topVerdict(reactions) {
   if (!reactions) return null;
@@ -70,7 +71,7 @@ export default function BookmarksPage() {
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <Link to={`/idea/${entry.id}`} className="font-heading text-lg text-white hover:text-mi-accent transition-colors inline-flex items-center gap-1.5">
-                      {entry.raw_input} <ArrowUpRight size={15} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                      {displayTitle(entry)} <ArrowUpRight size={15} className="opacity-0 group-hover:opacity-100 transition-opacity" />
                     </Link>
                     {entry.summary && <p className="text-sm text-mi-text-secondary line-clamp-2 mt-1">{entry.summary}</p>}
                     <div className="flex items-center gap-3 mt-2 text-xs text-mi-text-muted">

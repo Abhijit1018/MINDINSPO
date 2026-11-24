@@ -10,6 +10,7 @@ import { useAuth } from '../lib/AuthContext';
 import { StatCardSkeleton } from '../components/SkeletonLoaders';
 import toast from 'react-hot-toast';
 import { Link, Navigate } from 'react-router-dom';
+import { displayTitle, parseApiDate } from '../lib/ideaDisplay';
 
 function AdminStatCard({ label, value, icon: Icon, color }) {
   return (
@@ -148,7 +149,7 @@ export default function AdminPage() {
                         </div>
                       </div>
                       <span className="text-[10px] font-body text-mi-text-muted">
-                        Joined {new Date(u.created_at).toLocaleDateString()}
+                        Joined {parseApiDate(u.created_at).toLocaleDateString()}
                       </span>
                     </div>
                   ))}
@@ -182,7 +183,7 @@ export default function AdminPage() {
                             {e.visibility}
                           </span>
                         </div>
-                        <p className="font-body text-sm text-white truncate pr-4">{e.raw_input}</p>
+                        <p className="font-body text-sm text-white truncate pr-4">{displayTitle(e)}</p>
                       </div>
                       <div className="shrink-0 flex items-center gap-3">
                         <span className={`w-2 h-2 rounded-full ${
@@ -227,7 +228,7 @@ export default function AdminPage() {
                         {u.id}
                       </td>
                       <td className="px-6 py-4 font-body text-xs text-mi-text-muted">
-                        {new Date(u.created_at).toLocaleDateString()}
+                        {parseApiDate(u.created_at).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4 text-right">
                         <Link to={`/profile/${u.id}`} className="p-2 text-mi-text-muted hover:text-white transition-colors">
@@ -259,7 +260,7 @@ export default function AdminPage() {
                   {entries.map(e => (
                     <tr key={e.id} className="hover:bg-white/[0.02] transition-colors">
                       <td className="px-6 py-4 max-w-md">
-                        <p className="font-body text-sm text-white truncate">{e.raw_input}</p>
+                        <p className="font-body text-sm text-white truncate">{displayTitle(e)}</p>
                         <p className="text-[10px] text-mi-text-muted font-mono uppercase tracking-tighter mt-1">{e.id}</p>
                       </td>
                       <td className="px-6 py-4">
@@ -286,7 +287,7 @@ export default function AdminPage() {
                         </span>
                       </td>
                       <td className="px-6 py-4 font-body text-xs text-mi-text-muted">
-                        {e.created_at ? new Date(e.created_at).toLocaleDateString() : 'N/A'}
+                        {e.created_at ? parseApiDate(e.created_at).toLocaleDateString() : 'N/A'}
                       </td>
                     </tr>
                   ))}

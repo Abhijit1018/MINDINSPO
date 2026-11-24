@@ -1,17 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import mermaid from 'mermaid';
 import { ArrowLeft, Layers, Zap, AlertTriangle, GitBranch, ArrowRight, CheckCircle2, MessageSquare, Search, Send, Check, X, Pencil, Bot, ChevronDown, ChevronUp, ArrowDown, Globe, Lock, Terminal, HelpCircle, RefreshCw, Download, BarChart3, Eye, GitFork, ImageOff } from 'lucide-react';
 import { authFetch } from '../lib/api';
 import ReactMarkdown from 'react-markdown';
 import { useAuth } from '../lib/AuthContext';
+import MermaidDiagram from './MermaidDiagram';
+import BuildProgressEditor from './BuildProgressEditor';
+import { displayTitle, parseApiDate } from '../lib/ideaDisplay';
 
-mermaid.initialize({
-    startOnLoad: true,
-    theme: 'dark',
-    securityLevel: 'loose',
-    fontFamily: '"Space Grotesk", sans-serif',
-});
 
 function ConceptImage({ src }) {
     const [state, setState] = useState('loading'); // 'loading' | 'loaded' | 'error'
@@ -46,95 +42,6 @@ function ConceptImage({ src }) {
             />
         </div>
     );
-}
-
-function MermaidDiagram({ chart }) {
-    const ref = useRef(null);
-    const [error, setError] = useState(null);
-    const [rawChart, setRawChart] = useState("");
-
-    useEffect(() => {
-        if (chart && ref.current) {
-            setError(null);
-            const id = `mermaid-scifi-${Math.random().toString(36).substr(2, 9)}`;
-            try {
-                let cleanMermaid = chart;
-                if (typeof cleanMermaid === 'string') {
-                    try {
-                        const parsed = JSON.parse(cleanMermaid);
-                        if (typeof parsed === 'string') cleanMermaid = parsed;
-                    } catch (e) { }
-
-                    cleanMermaid = cleanMermaid
-                        .replace(/```mermaid\n?/i, '')
-                        .replace(/```\n?/g, '')
-                        .replace(/\\n/g, '\n')
-                        .trim();
-
-                    cleanMermaid = cleanMermaid.replace(/([A-Za-z0-9_-]+)\[([^\]]+)\]/g, (match, node, innerText) => {
-                        if (innerText.startsWith('(') && innerText.endsWith(')')) {
-                            return match;
-                        }
-                        if (/[()]/.test(innerText) && !innerText.includes('"')) {
-                            return `${node}["${innerText}"]`;
-                        }
-                        return match;
-                    });
-
-                    // Same guard for {decision} / rhombus nodes: parens (or other
-                    // special chars) inside an unquoted {label} break the parser.
-                    cleanMermaid = cleanMermaid.replace(/([A-Za-z0-9_-]+)\{([^{}]+)\}/g, (match, node, innerText) => {
-                        if (/[()]/.test(innerText) && !innerText.includes('"')) {
-                            return `${node}{"${innerText}"}`;
-                        }
-                        return match;
-                    });
-
-                    cleanMermaid = cleanMermaid.replace(/(-->\|)([^|]+)(\|)/g, (match, p1, p2, p3) => {
-                        return `${p1}${p2.trim()}${p3}`;
-                    });
-
-                    cleanMermaid = cleanMermaid.replace(/(-->\|[^|]+\|)>([\s]*)/g, '$1$2');
-                }
-
-                setRawChart(cleanMermaid);
-
-                if (cleanMermaid.length > 5 && (cleanMermaid.includes('graph') || cleanMermaid.includes('flowchart') || cleanMermaid.includes('sequenceDiagram'))) {
-                    mermaid.render(id, cleanMermaid).then((result) => {
-                        if (ref.current) {
-                            ref.current.innerHTML = result.svg;
-                        }
-                    }).catch(e => {
-                        console.error("Mermaid specific render error", e);
-                        setError(e.message || "Failed to render diagram.");
-                    });
-                } else {
-                    setError("Not a valid Mermaid diagram syntax.");
-                }
-            } catch (e) {
-                console.error("Mermaid parsing error", e);
-                setError(e.message || "Failed to process diagram.");
-            }
-        }
-    }, [chart]);
-
-    if (error) {
-        return (
-            <div className="w-full overflow-x-auto flex flex-col p-6 text-red-500 bg-red-500/10 border border-red-500/50">
-                <div className="flex items-center gap-2 mb-2">
-                    <AlertTriangle size={24} />
-                    <p className="font-bold uppercase tracking-wider">Diagram Rendering Failed</p>
-                </div>
-                <div className="text-sm opacity-80 mb-4">{error}</div>
-                <div className="text-xs bg-black/50 p-4 border border-red-500/30 w-full whitespace-pre-wrap font-mono text-left">
-                    <div className="text-white/50 mb-2">RAW SYNTAX:</div>
-                    {rawChart || chart}
-                </div>
-            </div>
-        );
-    }
-
-    return <div ref={ref} className="overflow-x-auto p-4 bg-black/40 border border-neo-border flex justify-center w-full min-h-[100px]" />;
 }
 
 /**
@@ -279,7 +186,7 @@ export default function IdeaDetail({ entry, onBack, onEntryUpdate }) {
         const arr = (v) => Array.isArray(v) ? v : (() => { try { const p = JSON.parse(v); return Array.isArray(p) ? p : []; } catch { return []; } })();
         const pc = entry.pros_cons || {};
         const lines = [
-            `# ${entry.raw_input}`, '',
+            `# ${displayTitle(entry)}`, '',
             entry.summary || '', '',
             arr(entry.tech_stack).length ? `## Tech Stack\n${arr(entry.tech_stack).map(t => `- ${t}`).join('\n')}\n` : '',
             arr(pc.pros).length ? `## Pros\n${arr(pc.pros).map(t => `- ${t}`).join('\n')}\n` : '',
@@ -685,10 +592,10 @@ export default function IdeaDetail({ entry, onBack, onEntryUpdate }) {
                     </button>
                     <div>
                         <h1 className="text-3xl font-display font-bold uppercase tracking-tighter text-white">
-                            {raw_input}
+                            {displayTitle(entry)}
                         </h1>
                         <span className="text-sm font-sans text-neo-muted">
-                            {new Date(created_at).toLocaleString()}
+                            {parseApiDate(created_at).toLocaleString()}
                         </span>
                     </div>
                 </div>
@@ -721,6 +628,14 @@ export default function IdeaDetail({ entry, onBack, onEntryUpdate }) {
                         <Download size={14} /> Export .md
                     </button>
                 </div>
+            )}
+            {isOwner && status === 'completed' && (
+                <BuildProgressEditor
+                    entryId={entry.id}
+                    status={entry.build_status}
+                    lookingFor={entry.looking_for || []}
+                    onSaved={(updated) => onEntryUpdate && onEntryUpdate({ ...entry, build_status: updated?.build_status ?? null, looking_for: updated?.looking_for || [] })}
+                />
             )}
 
             {/* Analytics panel */}
@@ -976,7 +891,7 @@ export default function IdeaDetail({ entry, onBack, onEntryUpdate }) {
                                             <span className="text-[10px] bg-blue-500/20 text-blue-400 px-1.5 py-0.5 rounded uppercase font-bold">Collaborator</span>
                                         )}
                                     </div>
-                                    <span className="text-xs text-neo-muted">{new Date(u.created_at).toLocaleString()}</span>
+                                    <span className="text-xs text-neo-muted">{parseApiDate(u.created_at).toLocaleString()}</span>
                                 </div>
                                 <p className="text-sm text-white whitespace-pre-wrap">{u.content}</p>
                             </div>
@@ -1194,7 +1109,7 @@ export default function IdeaDetail({ entry, onBack, onEntryUpdate }) {
                                                      <div className="max-w-[80%] px-4 py-2 rounded-xl bg-mi-accent text-white">
                                                          <p className="text-sm font-body">{message.message}</p>
                                                          <span className="text-[10px] text-white/50 block mt-1">
-                                                             {new Date(message.created_at).toLocaleTimeString()}
+                                                             {parseApiDate(message.created_at).toLocaleTimeString()}
                                                          </span>
                                                      </div>
                                                  </div>
@@ -1208,7 +1123,7 @@ export default function IdeaDetail({ entry, onBack, onEntryUpdate }) {
                                                          <div className="flex items-center gap-2 mb-2">
                                                              <span className="text-xs font-body font-semibold text-mi-text-secondary">AI Assistant</span>
                                                              <span className="text-[10px] text-mi-text-muted font-body">
-                                                                 {new Date(message.created_at).toLocaleTimeString()}
+                                                                 {parseApiDate(message.created_at).toLocaleTimeString()}
                                                              </span>
                                                          </div>
                                                          <div className={`text-sm prose prose-invert prose-sm max-w-none font-body ${isLong && !isExpanded ? 'max-h-32 overflow-hidden relative' : ''}`}>

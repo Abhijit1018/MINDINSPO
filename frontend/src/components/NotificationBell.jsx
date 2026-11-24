@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bell, Lightbulb, Users, Heart, MessageSquare, Check, CheckCheck } from 'lucide-react';
+import { Bell, Lightbulb, Users, Heart, MessageSquare, Check, CheckCheck, AtSign, BadgeIndianRupee, GitFork, UserPlus } from 'lucide-react';
 import { authFetch } from '../lib/api';
 import { useAuth } from '../lib/AuthContext';
 
@@ -11,6 +11,10 @@ const TYPE_CONFIG = {
   connect_accepted: { icon: Check, color: 'text-green-400', bg: 'bg-green-400/10' },
   connect_declined: { icon: Users, color: 'text-mi-text-muted', bg: 'bg-white/5' },
   comment: { icon: MessageSquare, color: 'text-purple-400', bg: 'bg-purple-400/10' },
+  mention: { icon: AtSign, color: 'text-sky-400', bg: 'bg-sky-400/10' },
+  validation: { icon: BadgeIndianRupee, color: 'text-green-400', bg: 'bg-green-400/10' },
+  remix: { icon: GitFork, color: 'text-mi-accent', bg: 'bg-mi-accent/10' },
+  follow: { icon: UserPlus, color: 'text-blue-400', bg: 'bg-blue-400/10' },
 };
 
 export default function NotificationBell() {

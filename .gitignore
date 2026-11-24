@@ -27,3 +27,6 @@ Thumbs.db
 .continue/
 .kiro/
 .trae/
+
+# Build-time feed snapshot (regenerated on every build)
+frontend/public/feed-snapshot.json

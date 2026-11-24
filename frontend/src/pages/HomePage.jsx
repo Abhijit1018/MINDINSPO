@@ -5,13 +5,14 @@ import {
   ArrowUpRight, Sparkles, Lightbulb, Users, Zap, Brain,
   MessageSquare, GitBranch, TrendingUp, ChevronRight
 } from 'lucide-react';
+import { displayTitle, thumbUrl, imgFallback } from '../lib/ideaDisplay';
 
 /* ─── Marquee Band ─── */
 function MarqueeBand() {
   const items = [
-    'AI-Powered Research', 'Mermaid Diagrams', 'Tech Stack Analysis',
-    'Community Collaboration', 'Idea Incubation', 'n8n Workflows',
-    'Real-time Chat', 'Vector Search', 'Smart Catalogs', 'Build Together'
+    'AI-Powered Research', 'Architecture Diagrams', 'Tech Stack Analysis',
+    'Market Validation', 'Idea Incubation', 'Find Co-founders',
+    'Chat With Your Idea', 'Remix Ideas', 'Build Together'
   ];
   const doubled = [...items, ...items];
   return (
@@ -25,28 +26,6 @@ function MarqueeBand() {
         ))}
       </div>
     </div>
-  );
-}
-
-/* ─── Feature card ─── */
-function FeatureCard({ icon: Icon, title, desc, index }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-50px' }}
-      transition={{ duration: 0.5, delay: index * 0.1 }}
-      className="group relative p-8 rounded-2xl border border-mi-border bg-mi-surface hover:border-mi-accent/40 transition-all duration-500"
-    >
-      <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-mi-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-      <div className="relative z-10">
-        <div className="w-12 h-12 rounded-xl bg-mi-accent/10 flex items-center justify-center mb-5 group-hover:bg-mi-accent/20 transition-colors duration-300">
-          <Icon size={22} className="text-mi-accent" />
-        </div>
-        <h3 className="font-heading text-2xl tracking-wide text-white mb-3">{title}</h3>
-        <p className="font-body text-mi-text-secondary text-sm leading-relaxed">{desc}</p>
-      </div>
-    </motion.div>
   );
 }
 
@@ -71,23 +50,25 @@ export default function HomePage() {
   const heroScale = useTransform(scrollYProgress, [0, 0.8], [1, 1.05]);
   const heroY = useTransform(scrollYProgress, [0, 1], [0, 100]);
 
-  const [stats, setStats] = useState({ total_users: 0, total_ideas: 0, recent: [], recent_users: [] });
+  const [stats, setStats] = useState({ loaded: false, total_users: 0, total_ideas: 0, public_ideas: 0, recent: [], recent_users: [] });
 
   useEffect(() => {
     const base = (import.meta.env.VITE_API_BASE_URL || '').trim().replace(/\/$/, '') || 'http://localhost:5000';
-    fetch(`${base}/api/stats`)
+    // Cold backend can take ~45s; give up after 20s rather than spin forever.
+    fetch(`${base}/api/stats`, { signal: AbortSignal.timeout(20000) })
       .then(r => r.ok ? r.json() : null)
-      .then(d => { if (d) setStats(prev => ({ ...prev, ...d })); })
-      .catch(() => {});
+      .then(d => setStats(prev => ({ ...prev, ...(d || {}), loaded: true })))
+      // Failure/timeout: stop showing skeletons; sections with no real data hide.
+      .catch(() => setStats(prev => ({ ...prev, loaded: true })));
   }, []);
 
   const features = [
-    { icon: Lightbulb, title: 'IDEA INGESTION', desc: 'Drop any raw idea, tool name, or concept. Our AI pipeline researches, expands, and structures it into actionable intelligence.' },
-    { icon: Brain, title: 'AI RESEARCH ENGINE', desc: 'Powered by n8n workflows and LLMs. Generates summaries, tech stacks, pros/cons, architecture diagrams, and concept imagery.' },
-    { icon: GitBranch, title: 'SYSTEM DIAGRAMS', desc: 'Auto-generated Mermaid.js flowcharts mapping out architectures and workflows for every idea in your catalog.' },
-    { icon: Users, title: 'COMMUNITY HUB', desc: 'Publish ideas to the community. Comment, collaborate, and find co-builders for projects you believe in.' },
-    { icon: MessageSquare, title: 'SMART CHAT', desc: 'Chat with your catalog entries. Ask questions, request modifications, and have the AI propose changes you can accept or reject.' },
-    { icon: TrendingUp, title: 'VECTOR SEARCH', desc: 'Semantic search across your entire catalog. Find related ideas and discover connections you didn\'t know existed.' },
+    { icon: Lightbulb, title: 'Drop a raw idea', desc: 'A sentence, a tool name, a shower thought. No template, no blank-page pressure.' },
+    { icon: Brain, title: 'Get the research', desc: 'Summary, suggested tech stack, strengths and risks, what already exists, and a concept image.' },
+    { icon: GitBranch, title: 'See how it would work', desc: 'An architecture diagram generated for every idea, so you can reason about the build.' },
+    { icon: TrendingUp, title: 'Validate with real people', desc: 'Publish it and builders tell you if they would use it, and what they would pay in rupees.' },
+    { icon: Users, title: 'Find who you need', desc: 'Mark what you are looking for (co-founder, designer, developer) and let the right people reach out.' },
+    { icon: MessageSquare, title: 'Iterate with AI', desc: 'Chat with your idea, ask what to cut, and accept or reject the changes it proposes.' },
   ];
 
   return (
@@ -187,19 +168,15 @@ export default function HomePage() {
               </motion.div>
 
               {/* Social proof */}
+              {stats.loaded && stats.total_users > 0 && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 0.8 }}
+                transition={{ duration: 0.4 }}
                 className="mt-16 flex items-center gap-4"
               >
                 <div className="flex -space-x-3">
-                  {((stats.recent_users?.length ?? 0) > 0 ? stats.recent_users : [
-                    { initials: 'AB', avatar_url: null },
-                    { initials: 'MK', avatar_url: null },
-                    { initials: 'SR', avatar_url: null },
-                    { initials: 'PD', avatar_url: null },
-                  ]).map((u, i) => (
+                  {(stats.recent_users || []).map((u, i) => (
                     <div key={i} className="w-10 h-10 rounded-full border-2 border-mi-bg shadow-sm overflow-hidden bg-mi-surface flex items-center justify-center">
                       {u.avatar_url
                         ? <img src={u.avatar_url} alt={u.initials} className="w-full h-full object-cover" />
@@ -209,9 +186,10 @@ export default function HomePage() {
                   ))}
                 </div>
                 <p className="font-body text-sm text-white/50">
-                  <span className="text-white font-medium">{stats.total_users > 0 ? stats.total_users : 'builders'}</span> already incubating
+                  <span className="text-white font-medium">{stats.total_users} builders</span> already incubating
                 </p>
               </motion.div>
+              )}
             </div>
 
             {/* Right side: Empty space to let the planet image show through */}
@@ -268,7 +246,7 @@ export default function HomePage() {
               <div className="mt-12 space-y-0 border-l-2 border-mi-accent/30 ml-1">
                 {[
                   { step: '/01', title: 'Drop Your Idea', text: 'Type any raw concept, tool, or thought' },
-                  { step: '/02', title: 'AI Researches', text: 'n8n + LLMs analyze and structure your input' },
+                  { step: '/02', title: 'AI Researches', text: 'Market, stack and architecture in about 15 seconds' },
                   { step: '/03', title: 'Get Your Catalog', text: 'Tech stack, diagrams, analysis — all automated' },
                   { step: '/04', title: 'Share & Collaborate', text: 'Publish to community, find co-builders' },
                 ].map((item, i) => (
@@ -297,12 +275,25 @@ export default function HomePage() {
                 transition={{ delay: 0.2 }}
                 className="relative"
               >
-                {/* Card mockup */}
+                {/* Card: a real community idea when one is available */}
+                {stats.recent?.[0] ? (
+                  <Link to={`/idea/${stats.recent[0].id}`} className="block bg-[#1a1a1e] rounded-2xl overflow-hidden shadow-2xl group">
+                    {stats.recent[0].image_url && (
+                      <img src={thumbUrl(stats.recent[0].image_url, 900)} alt="" loading="lazy" className="w-full aspect-[16/9] object-cover" onError={imgFallback(stats.recent[0].image_url)} />
+                    )}
+                    <div className="p-6 space-y-3">
+                      <span className="px-3 py-1 bg-mi-accent/20 text-mi-accent text-xs font-body font-semibold rounded-full">LIVE FROM THE COMMUNITY</span>
+                      <h4 className="text-2xl font-semibold text-white leading-tight group-hover:text-mi-accent transition-colors">{displayTitle(stats.recent[0])}</h4>
+                      <p className="text-white/70 font-body text-sm leading-relaxed line-clamp-3">{stats.recent[0].tagline || stats.recent[0].summary}</p>
+                      <span className="inline-flex items-center gap-1 text-sm text-mi-accent">See the full breakdown <ArrowUpRight size={15} /></span>
+                    </div>
+                  </Link>
+                ) : (
                 <div className="bg-[#1a1a1e] rounded-2xl overflow-hidden shadow-2xl">
                   <div className="p-6 border-b border-white/10">
                     <div className="flex items-center justify-between">
                       <div>
-                        <span className="px-3 py-1 bg-mi-accent/20 text-mi-accent text-xs font-body font-semibold rounded-full">IDEA • COMPLETED</span>
+                        <span className="px-3 py-1 bg-white/10 text-white/70 text-xs font-body font-semibold rounded-full">EXAMPLE BREAKDOWN</span>
                         <h4 className="font-heading text-2xl tracking-wide text-white mt-3">AI-POWERED CODE REVIEW</h4>
                       </div>
                     </div>
@@ -336,15 +327,11 @@ export default function HomePage() {
                     </div>
                   </div>
                 </div>
+                )}
 
-                {/* Floating tag */}
-                <motion.div
-                  animate={{ y: [0, -8, 0] }}
-                  transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-                  className="absolute -top-4 -right-4 bg-mi-accent text-white px-4 py-2 rounded-full font-heading text-sm tracking-wider shadow-lg"
-                >
+                <div className="absolute -top-4 -right-4 bg-mi-accent text-white px-4 py-2 rounded-full font-heading text-sm tracking-wider shadow-lg">
                   AI GENERATED
-                </motion.div>
+                </div>
               </motion.div>
 
               {/* Price-like tag from reference */}
@@ -357,7 +344,7 @@ export default function HomePage() {
               >
                 <div className="text-right">
                   <span className="font-heading text-5xl text-[#1a1a1a]">FREE</span>
-                  <p className="font-body text-sm text-[#999] mt-1">Open-source & AI-powered</p>
+                  <p className="font-body text-sm text-[#6b6b6b] mt-1">No credit card. Your ideas stay private until you publish.</p>
                 </div>
               </motion.div>
             </div>
@@ -372,39 +359,51 @@ export default function HomePage() {
         <div className="max-w-[1400px] mx-auto px-6 lg:px-10 relative z-10">
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 mb-16">
             <div>
-              <div className="section-label mb-4">Platform Features</div>
+              <div className="section-label mb-4">From idea to signal</div>
               <h2 className="font-heading text-[clamp(2.5rem,5vw,4.5rem)] leading-[0.95] tracking-wide text-white">
-                FEATURED <span className="text-mi-accent">/</span>
+                WHAT YOU <span className="text-mi-accent">/</span>
                 <br />
-                CAPABILITIES.
+                GET.
               </h2>
-            </div>
-            <div className="font-heading text-[clamp(3rem,6vw,5rem)] text-mi-text-muted/20 leading-none">
-              ({String(features.length).padStart(2, '0')}+)
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {features.map((feature, i) => (
-              <FeatureCard key={i} {...feature} index={i} />
+          <ol className="grid grid-cols-1 lg:grid-cols-2 gap-x-16 border-t border-mi-border">
+            {features.map((f, i) => (
+              <motion.li
+                key={f.title}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-40px' }}
+                transition={{ duration: 0.4, delay: (i % 2) * 0.06, ease: [0.22, 1, 0.36, 1] }}
+                className="flex gap-6 py-8 border-b border-mi-border"
+              >
+                <span className="font-heading text-3xl text-mi-accent leading-none w-10 shrink-0 tabular-nums">{String(i + 1).padStart(2, '0')}</span>
+                <div>
+                  <h3 className="flex items-center gap-2 text-xl font-semibold text-white"><f.icon size={18} className="text-mi-text-secondary" /> {f.title}</h3>
+                  <p className="mt-2 font-body text-mi-text-secondary leading-relaxed max-w-md">{f.desc}</p>
+                </div>
+              </motion.li>
             ))}
-          </div>
+          </ol>
         </div>
       </section>
 
       {/* ═══════════════════════════════════════════
           STATS BAR
           ═══════════════════════════════════════════ */}
-      <section className="py-16 border-y border-mi-border">
+      {stats.loaded && stats.total_ideas > 0 && (
+      <section className="py-16 border-b border-mi-border">
         <div className="max-w-[1400px] mx-auto px-6 lg:px-10">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            <StatCounter value={stats.total_users > 0 ? `${stats.total_users}+` : '∞'} label="Active Builders" />
-            <StatCounter value={stats.total_ideas > 0 ? `${stats.total_ideas}+` : '6+'} label="Ideas Incubated" />
-            <StatCounter value="<30s" label="Processing Time" />
-            <StatCounter value="100%" label="Open Source" />
+            <StatCounter value={stats.total_users} label="Builders" />
+            <StatCounter value={stats.total_ideas} label="Ideas researched" />
+            <StatCounter value={stats.public_ideas} label="Published for feedback" />
+            <StatCounter value="~15s" label="From idea to breakdown" />
           </div>
         </div>
       </section>
+      )}
 
       {/* ═══════════════════════════════════════════
           LATEST / CTA SECTION
@@ -429,42 +428,34 @@ export default function HomePage() {
               </Link>
             </div>
 
-            {/* Stacked cards preview */}
-            <div className="relative">
-              {(stats.recent.length > 0
-                ? stats.recent
-                : [
-                    { raw_input: 'Smart Home Automation', tags: ['IoT'], summary: 'AI-analyzed • community idea' },
-                    { raw_input: 'Decentralized Voting', tags: ['Web3'], summary: 'AI-analyzed • community idea' },
-                    { raw_input: 'AI Content Pipeline', tags: ['AI/ML'], summary: 'AI-analyzed • community idea' },
-                  ]
-              ).map((card, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 20, rotate: 0 }}
-                  whileInView={{ opacity: 1, y: 0, rotate: i === 0 ? -2 : i === 2 ? 2 : 0 }}
-                  whileHover={{ y: -15, rotate: 0, scale: 1.02, zIndex: 40 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.15, duration: 0.3, ease: 'easeOut' }}
-                  className={`${i > 0 ? '-mt-16' : ''} relative bg-mi-surface border border-mi-border rounded-2xl p-4 sm:p-6 shadow-editorial cursor-pointer hover:border-mi-accent/40 group transition-colors duration-300`}
-                  style={{ zIndex: 30 - i * 10 }}
-                >
-                  <Link to="/community" className="absolute inset-0 z-20 rounded-2xl" />
-                  <div className="relative z-10 flex items-center justify-between pointer-events-none">
-                    <div>
-                      {(card.tags || []).slice(0, 1).map(tag => (
-                        <span key={tag} className="px-2 py-0.5 bg-mi-accent/20 text-mi-accent text-xs font-body font-semibold rounded-md">{tag}</span>
-                      ))}
-                      <h4 className="font-heading text-xl tracking-wide text-white mt-2 group-hover:text-mi-accent transition-colors duration-300 line-clamp-1">
-                        {card.raw_input}
-                      </h4>
-                      <p className="font-body text-xs text-mi-text-muted mt-1 line-clamp-2">{card.summary || 'AI-analyzed • community idea'}</p>
-                    </div>
-                    <ChevronRight size={20} className="text-mi-text-muted group-hover:text-mi-accent group-hover:translate-x-1 transition-all duration-300 shrink-0 ml-3" />
+            {/* Latest real ideas */}
+            {stats.recent?.length > 0 ? (
+              <ul className="rounded-2xl border border-mi-border bg-mi-surface divide-y divide-mi-border overflow-hidden">
+                {stats.recent.map((card) => (
+                  <li key={card.id}>
+                    <Link to={`/idea/${card.id}`} className="group flex items-center gap-4 p-4 sm:p-5 hover:bg-white/[0.03] transition-colors">
+                      {card.image_url ? (
+                        <img src={thumbUrl(card.image_url, 160)} alt="" loading="lazy" width="64" height="64" className="w-16 h-16 rounded-xl object-cover ring-1 ring-mi-border shrink-0" onError={imgFallback(card.image_url)} />
+                      ) : <span className="w-16 h-16 rounded-xl bg-mi-surface-2 shrink-0" />}
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-lg font-semibold text-white truncate group-hover:text-mi-accent transition-colors">{displayTitle(card)}</span>
+                        <span className="block font-body text-sm text-mi-text-secondary line-clamp-2 mt-0.5">{card.tagline || card.summary}</span>
+                      </span>
+                      <ChevronRight size={20} className="text-mi-text-muted group-hover:text-mi-accent shrink-0" />
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            ) : !stats.loaded ? (
+              <div className="rounded-2xl border border-mi-border bg-mi-surface divide-y divide-mi-border" aria-busy="true">
+                {[0, 1, 2].map((i) => (
+                  <div key={i} className="flex items-center gap-4 p-5 animate-pulse">
+                    <span className="w-16 h-16 rounded-xl bg-white/[0.05]" />
+                    <span className="flex-1 space-y-2"><span className="block h-4 w-1/2 rounded bg-white/[0.06]" /><span className="block h-3 w-3/4 rounded bg-white/[0.05]" /></span>
                   </div>
-                </motion.div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : null}
           </div>
         </div>
       </section>

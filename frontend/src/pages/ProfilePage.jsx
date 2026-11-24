@@ -6,6 +6,7 @@ import { authFetch } from '../lib/api';
 import { useAuth } from '../lib/AuthContext';
 import { ProfileSkeleton } from '../components/SkeletonLoaders';
 import toast from 'react-hot-toast';
+import { displayTitle, parseApiDate } from '../lib/ideaDisplay';
 
 const REACTION_LABELS = {
   brilliant: { icon: Lightbulb, label: 'Brilliant', color: 'text-yellow-400' },
@@ -84,7 +85,7 @@ export default function ProfilePage() {
   const totalReactionCount = profile.total_reactions
     ? Object.values(profile.total_reactions).reduce((a, b) => a + b, 0) : 0;
 
-  const memberSince = new Date(profile.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+  const memberSince = parseApiDate(profile.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
 
   return (
     <div className="pt-24 pb-16">
@@ -218,14 +219,14 @@ export default function ProfilePage() {
                             <span className="text-xs text-mi-text-muted font-body">· {idea.updates_count} updates</span>
                           )}
                         </div>
-                        <h3 className="font-heading text-lg tracking-wide text-white">{idea.raw_input}</h3>
+                        <h3 className="font-heading text-lg tracking-wide text-white">{displayTitle(idea)}</h3>
                         {idea.summary && <p className="font-body text-xs text-mi-text-muted mt-1 line-clamp-2">{idea.summary}</p>}
                         {idea.latest_update?.content && (
                           <div className="mt-2 rounded-lg border border-mi-border/60 bg-mi-bg/40 p-2">
                             <div className="flex items-center justify-between">
                               <span className="text-[10px] uppercase tracking-wide text-mi-accent font-body">{idea.latest_update.update_type}</span>
                               <span className="text-[10px] text-mi-text-muted font-body">
-                                {new Date(idea.latest_update.created_at).toLocaleDateString()}
+                                {parseApiDate(idea.latest_update.created_at).toLocaleDateString()}
                               </span>
                             </div>
                             <p className="text-xs text-mi-text-secondary mt-1 line-clamp-2">

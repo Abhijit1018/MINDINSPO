@@ -15,6 +15,7 @@ import IdeaInput from '../components/IdeaInput';
 import EmptyState from '../components/EmptyState';
 import PipelineStatus from '../components/PipelineStatus';
 import OnboardingModal from '../components/OnboardingModal';
+import { displayTitle, parseApiDate } from '../lib/ideaDisplay';
 
 /* ─── Stat Card ─── */
 function StatCard({ icon: Icon, label, value, accent, delay = 0 }) {
@@ -65,7 +66,7 @@ function ActivityItem({ entry, index }) {
         'bg-red-400'
       }`} />
       <div className="flex-1 min-w-0">
-        <p className="font-body text-sm text-white truncate">{entry.raw_input}</p>
+        <p className="font-body text-sm text-white truncate">{displayTitle(entry)}</p>
         <p className="font-body text-xs text-mi-text-muted">
           {entry.input_type === 'tool' ? 'Tool' : 'Idea'} • {entry.status}
         </p>
@@ -215,7 +216,7 @@ export default function DashboardPage() {
 
   // Recent activity (last 5)
   const recentActivity = useMemo(() => {
-    return [...entries].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 5);
+    return [...entries].sort((a, b) => parseApiDate(b.created_at) - parseApiDate(a.created_at)).slice(0, 5);
   }, [entries]);
 
   // If showing detail view
@@ -400,7 +401,7 @@ export default function DashboardPage() {
                     }`} />
                     <div className="flex-1 min-w-0">
                       <p className="font-body text-sm text-white truncate group-hover:text-mi-accent transition-colors">
-                        {entry.raw_input}
+                        {displayTitle(entry)}
                       </p>
                     </div>
                     <span className="px-2 py-0.5 bg-mi-accent/10 text-mi-accent text-xs font-body rounded-md shrink-0">

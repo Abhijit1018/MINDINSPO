@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Loader2, Zap } from 'lucide-react';
+import { displayTitle } from '../lib/ideaDisplay';
 
 const STAGES = [
   'Queuing idea',
@@ -34,7 +35,7 @@ function PipelineCard({ entry }) {
         <Loader2 size={18} className="text-mi-accent animate-spin" />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="font-body text-sm text-white truncate">{entry.raw_input}</p>
+        <p className="font-body text-sm text-white truncate">{displayTitle(entry)}</p>
         <div className="flex items-center gap-2 mt-1">
           <span className="w-1.5 h-1.5 rounded-full bg-mi-accent animate-pulse" />
           <span className="font-body text-xs text-mi-accent">{STAGES[stageIndex]}</span>

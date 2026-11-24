@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Users, ArrowLeft, Loader2, AlertTriangle, Handshake, Tag, Plus, Trash2, ChevronLeft, ChevronRight, Check, Wifi } from 'lucide-react';
 import { authFetch } from '../lib/api';
 import { supabase } from '../lib/supabase';
+import { displayTitle } from '../lib/ideaDisplay';
 
 const COLUMNS = [
   { key: 'todo', label: 'To do' },
@@ -213,7 +214,7 @@ export default function CollabWorkspacePage() {
               <Handshake size={16} className="text-mi-accent" />
               <span className="font-heading text-sm tracking-wider text-mi-accent uppercase">Collaboration Workspace</span>
             </div>
-            <h1 className="font-heading text-2xl text-white tracking-wide">{entry.raw_input}</h1>
+            <h1 className="font-heading text-2xl text-white tracking-wide">{displayTitle(entry)}</h1>
           </div>
         </div>
 

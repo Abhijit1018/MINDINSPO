@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lightbulb, Eye, DollarSign, Hammer, Wrench } from 'lucide-react';
+import { Lightbulb, Eye, DollarSign, Hammer, Sprout } from 'lucide-react';
 import { authFetch } from '../lib/api';
 
 export const REACTION_CONFIG = [
@@ -8,7 +8,9 @@ export const REACTION_CONFIG = [
   { type: 'interested',   icon: Eye,        label: 'Interested',   color: 'text-blue-300',   hex: '#60a5fa' },
   { type: 'sellable',     icon: DollarSign, label: 'Sellable',     color: 'text-green-300',  hex: '#4ade80' },
   { type: 'build_worthy', icon: Hammer,     label: 'Build-worthy', color: 'text-orange-300', hex: '#fb923c' },
-  { type: 'needs_work',   icon: Wrench,     label: 'Needs work',   color: 'text-slate-300',  hex: '#94a3b8' },
+  // Sprout (early, needs growth) instead of a wrench: at 13px the old wrench was
+  // indistinguishable from Build-worthy's hammer.
+  { type: 'needs_work',   icon: Sprout,     label: 'Needs work',   color: 'text-slate-300',  hex: '#94a3b8' },
 ];
 export const REACTION_BY_TYPE = Object.fromEntries(REACTION_CONFIG.map((r) => [r.type, r]));
 
@@ -36,7 +38,7 @@ export function ReactionBurst({ hex }) {
 /* A single reaction chip: pops on tap, glows when active, bursts when added.
    When `canReact` is false (signed-out), it stays clickable so the parent can
    prompt a sign-in — but it does not burst (no misleading success animation). */
-export function ReactionPill({ r, count, isActive, canReact = true, onReact }) {
+export function ReactionPill({ r, count, isActive, canReact = true, onReact, showLabel = false }) {
   const [burstKey, setBurstKey] = useState(0);
   const handle = () => {
     if (!canReact) { onReact(r.type); return; }
@@ -54,10 +56,13 @@ export function ReactionPill({ r, count, isActive, canReact = true, onReact }) {
       }`}
       style={isActive ? { boxShadow: `0 0 0 1px ${r.hex}66, 0 0 14px -2px ${r.hex}55` } : undefined}
       title={r.label}
+      aria-label={`${r.label}${count ? `, ${count}` : ""}`}
+      aria-pressed={!!isActive}
     >
       <motion.span animate={isActive ? { scale: [1, 1.35, 1] } : { scale: 1 }} transition={{ duration: 0.3 }} className="flex">
         <r.icon size={13} style={isActive ? { color: r.hex } : undefined} />
       </motion.span>
+      {showLabel && <span>{r.label}</span>}
       <AnimatePresence mode="popLayout" initial={false}>
         {count > 0 && (
           <motion.span
@@ -76,7 +81,7 @@ export function ReactionPill({ r, count, isActive, canReact = true, onReact }) {
 }
 
 /* Always-visible row of all five reaction chips (used on the shareable idea page). */
-export function ReactionRow({ reactions = {}, userReactions = [], onReact, canReact = true }) {
+export function ReactionRow({ reactions = {}, userReactions = [], onReact, canReact = true, showLabels = false }) {
   return (
     <div className="flex flex-wrap gap-1.5">
       {REACTION_CONFIG.map((r) => (
@@ -87,6 +92,7 @@ export function ReactionRow({ reactions = {}, userReactions = [], onReact, canRe
           isActive={(userReactions || []).includes(r.type)}
           canReact={canReact}
           onReact={onReact}
+          showLabel={showLabels}
         />
       ))}
     </div>
